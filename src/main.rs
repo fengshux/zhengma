@@ -1,17 +1,64 @@
 extern crate clap;
 use std::fs;
 use std::collections::HashMap;
-use clap::App;
+use clap::{Arg, App, SubCommand};
 
 fn main() {
-    App::new("zhengma").version("v1.0-beta").get_matches();
+   let matches =  App::new("zhengma")
+        .version("v1.0-beta")
+        .arg(Arg::with_name("INPUT")
+            .help("Sets the input file to use")
+            .required(true)
+            .index(1))
+        .get_matches();
+
+    let file = matches.value_of("INPUT").unwrap();
+    println!("Using input file: {}", file);
+    let contents = fs::read_to_string(file)
+        .expect("Something went wrong reading the file");
+    
+    let dict = load_data_to_map("./data/zhengma.data");
+    
+    for v in contents.chars() {
+        if dict.contains_key(&v.to_string()) {
+            print!("{}",v);
+            print!("(");
+            print!("{}", dict.get(&v.to_string()).unwrap());
+            print!(")");
+        } else {
+            print!("{}",v);
+        }
+    }
+    
+    println!("len{}", dict.len())
 }
 
+fn load_data_to_map(path: &str) -> Box<HashMap<String,String>> {
+    let mut dict: Box<HashMap<String, String>> = Box::new(HashMap::new());
+    let contents = fs::read_to_string(path)
+        .expect("Something went wrong reading the file");
+    for line in contents.lines() {
+        let items: Vec<&str> = line.split(",").collect();
+        // one world may has more than one code.
+        // dict里保留最简单的code. 不存在则认为复杂code
+        let is_simple_code: bool = match dict.get(items[1]) {
+            Some(code) => code.len() < items[0].len(),
+            None => false,
+        };
+        
+        if  !is_simple_code {
+            dict.insert(items[1].to_string(),items[0].to_string());
+        }
+    }
+    return dict
+}
+
+// init data from ./data/zhengma.dict.yaml into ./data/zhengma.data
 fn init_data() {
 
     let contents = fs::read_to_string("./data/zhengma.dict.yaml")
         .expect("Something went wrong reading the file");
-
+    
     let v: Vec<&str> = contents.split("...").collect();
     let zhengma_str = v[1];
     let mut zhengma_content: String = "".to_owned();
@@ -31,11 +78,12 @@ fn init_data() {
     }
 
     match fs::write("./data/zhengma.data", zhengma_content.as_bytes()) {
-        Ok(()) => println!("write, success"),
+        Ok(_) => println!("write, success"),
         Err(e) => println!("write to file error,{}", e),
     }
 }
 
+// format a hashmap to string in key,vale each line
 fn to_format_string(dict: &HashMap<String,String>) ->  Box<String> {
     let mut contents: String = "".to_owned();
     for (key, val) in dict.iter() {
