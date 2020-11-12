@@ -20,17 +20,13 @@ fn main() {
     let dict = load_data_to_map("./data/zhengma.data");
     
     for v in contents.chars() {
-        if dict.contains_key(&v.to_string()) {
-            print!("{}",v);
-            print!("(");
-            print!("{}", dict.get(&v.to_string()).unwrap());
-            print!(")");
-        } else {
-            print!("{}",v);
-        }
-    }
-    
-    println!("len{}", dict.len())
+        print!("{}",v);
+        match dict.get(&v.to_string()) {
+            Some(code) => print!("({})",code),
+            None => (),
+        };
+   
+    }    
 }
 
 fn load_data_to_map(path: &str) -> Box<HashMap<String,String>> {
