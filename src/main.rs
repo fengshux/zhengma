@@ -6,28 +6,52 @@ use clap::{Arg, App, SubCommand};
 fn main() {
    let matches =  App::new("zhengma")
         .version("v1.0-beta")
-        .arg(Arg::with_name("INPUT")
-            .help("Sets the input file to use")
-            .required(true)
-            .index(1))
+        .subcommand(SubCommand::with_name("trans")
+                    .about("translate world to zhengma code")
+                    .version("1.0")
+                    .author("Someone E. <someone_else@other.com>")
+                    .arg(Arg::with_name("INPUT")
+                         .help("Sets the input file to use")
+                         .required(true)
+                         .index(1))
+                    .arg(Arg::with_name("OUTPUT")
+                         .help("output file . default output to console")
+                         .long("output")
+                         .short("o")
+                         .takes_value(true)
+                    )                    
+        )
         .get_matches();
 
-    let file = matches.value_of("INPUT").unwrap();
-    println!("Using input file: {}", file);
-    let contents = fs::read_to_string(file)
-        .expect("Something went wrong reading the file");
+    // let file = matches.value_of("INPUT").unwrap();
+    if let Some(matches) = matches.subcommand_matches("trans") {
+        let file = matches.value_of("INPUT").expect("expect input file");
+        let contents = fs::read_to_string(file)
+            .expect("Something went wrong reading the file");
     
-    let dict = load_data_to_map("./data/zhengma.data");
-    
+        let dict = load_data_to_map("./data/zhengma.data");    
+        let coded = to_code(dict, &contents);
+        match matches.value_of("OUTPUT") {
+            Some(path) => fs::write(path, coded.as_bytes()).expect("write file error"),
+            None => println!("{}",coded),
+        };               
+    } 
+}
+
+
+fn to_code(dict: Box<HashMap<String,String>>, contents: &str) -> Box<String>{
+    let mut coded_content = Box::new("".to_owned());
     for v in contents.chars() {
-        print!("{}",v);
+        coded_content.push(v);
         match dict.get(&v.to_string()) {
-            Some(code) => print!("({})",code),
+            Some(code) => coded_content.push_str(&format!("({})",code)),
             None => (),
         };
-   
-    }    
+        
+    }
+    return coded_content
 }
+
 
 fn load_data_to_map(path: &str) -> Box<HashMap<String,String>> {
     let mut dict: Box<HashMap<String, String>> = Box::new(HashMap::new());

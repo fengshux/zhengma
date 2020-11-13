@@ -1,0 +1,10 @@
+* zhengma是关于郑码学习的命令行软件
+
+** zhengma trans 
+   将文件里的汉字标记出郑码，可以方便的对照练习郑码
+
+*** 使用方法
+    #+BEGIN_SRC bash
+    zhengma trans origin.txt -o coded.txt
+    #+END_SRC
+    **不指定输出文件默认输出到console**
