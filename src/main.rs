@@ -76,14 +76,13 @@ fn load_data_to_map(path: &str) -> Box<HashMap<String,String>> {
         .expect("Something went wrong reading the file");
     for line in contents.lines() {
         let items: Vec<&str> = line.split(",").collect();
-        // one world may has more than one code.
-        // dict里保留最简单的code. 不存在则认为复杂code
-        let is_simple_code: bool = match dict.get(items[1]) {
-            Some(code) => code.len() < items[0].len(),
+        // 一个字可能有多个码，这里翻译只取全码
+        let is_full_code: bool = match dict.get(items[1]) {
+            Some(code) => code.len() >= items[0].len(),
             None => false,
         };
         
-        if  !is_simple_code {
+        if  !is_full_code {
             dict.insert(items[1].to_string(),items[0].to_string());
         }
     }
