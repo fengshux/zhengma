@@ -2,6 +2,7 @@ extern crate clap;
 use std::fs;
 use std::collections::HashMap;
 use clap::{Arg, App, SubCommand};
+mod data;
 
 fn main() {
    let matches =  App::new("zhengma")
