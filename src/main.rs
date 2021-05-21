@@ -3,8 +3,10 @@ use std::fs;
 use std::collections::HashMap;
 use clap::{Arg, App, SubCommand};
 mod data;
+mod init;
 
 fn main() {
+
    let matches =  App::new("zhengma")
         .version("v1.0-beta")
         .arg(Arg::with_name("WORLD")
@@ -29,7 +31,7 @@ fn main() {
         .get_matches();
 
     if let Some(world) = matches.value_of("WORLD") {
-        let dict = load_data_to_map_full_code("/etc/zhengma/data/zhengma.data");
+        let dict =  data::get_full_code_map();
         match dict.get(&world.to_string()) {           
             Some(codes) =>{
                 println!("{}:{}", world, codes.join(","))
@@ -40,6 +42,7 @@ fn main() {
         };
     }
 
+
     
     // let file = matches.value_of("INPUT").unwrap();
     if let Some(matches) = matches.subcommand_matches("trans") {
@@ -47,7 +50,7 @@ fn main() {
         let contents = fs::read_to_string(file)
             .expect("Something went wrong reading the file");
     
-        let dict = load_data_to_map("/etc/zhengma/data/zhengma.data");    
+        let dict =  data::get_full_code_map();
         let coded = to_code(dict, &contents);
         match matches.value_of("OUTPUT") {
             Some(path) => fs::write(path, coded.as_bytes()).expect("write file error"),
@@ -62,96 +65,10 @@ fn to_code(dict: Box<HashMap<String,String>>, contents: &str) -> Box<String>{
     for v in contents.chars() {
         coded_content.push(v);
         match dict.get(&v.to_string()) {
-            Some(code) => coded_content.push_str(&format!("({})",code)),
+            Some(code) => coded_content.push_str(&format!("({})",code.iter().max_by(|x, y| x.len() >= y.len()).unwrap())),
             None => (),
         };
         
     }
     return coded_content
-}
-
-
-fn load_data_to_map(path: &str) -> Box<HashMap<String,String>> {
-    let mut dict: Box<HashMap<String, String>> = Box::new(HashMap::new());
-    let contents = fs::read_to_string(path)
-        .expect("Something went wrong reading the file");
-    for line in contents.lines() {
-        let items: Vec<&str> = line.split(",").collect();
-        // 一个字可能有多个码，这里翻译只取全码
-        let is_full_code: bool = match dict.get(items[1]) {
-            Some(code) => code.len() >= items[0].len(),
-            None => false,
-        };
-        
-        if  !is_full_code {
-            dict.insert(items[1].to_string(),items[0].to_string());
-        }
-    }
-    return dict
-}
-
-
-fn load_data_to_map_full_code(path: &str) -> Box<HashMap<String,Vec<String>>> {
-    let mut dict: Box<HashMap<String, Vec<String>>> = Box::new(HashMap::new());
-    let contents = fs::read_to_string(path)
-        .expect("Something went wrong reading the file");
-    for line in contents.lines() {
-        let items: Vec<&str> = line.split(",").collect();
-
-        // 一个字可能对应多郑码这里可以列出多个
-        if dict.contains_key(items[1]) {
-            let codes = dict.get_mut(items[1]).unwrap();
-            codes.push(items[0].to_string());
-        } else {
-            let mut codes: Vec<String> = Vec::new();
-            codes.push(items[0].to_string());
-            dict.insert(items[1].to_string(), codes);
-        }
-    }
-    return dict
-}
-
-
-// init data from ./data/zhengma.dict.yaml into ./data/zhengma.data
-fn init_data() {
-
-    let contents = fs::read_to_string("./data/zhengma.dict.yaml")
-        .expect("Something went wrong reading the file");
-    
-    let v: Vec<&str> = contents.split("...").collect();
-    let zhengma_str = v[1];
-    let mut zhengma_content: String = "".to_owned();
-    
-    for line in zhengma_str.lines() {
-        let dict: Vec<&str> = line.split("\t").collect();
-        if dict.len() > 1 {
-            let mut newline: String = "".to_owned();
-            newline.push_str(dict[0]);
-            newline.push(',');
-            newline.push_str(dict[1]);
-            newline.push(',');
-            newline.push_str(dict[2]);
-            newline.push('\n');
-            zhengma_content.push_str(&newline);
-        }
-    }
-
-    match fs::write("./data/zhengma.data", zhengma_content.as_bytes()) {
-        Ok(_) => println!("write, success"),
-        Err(e) => println!("write to file error,{}", e),
-    }
-}
-
-// format a hashmap to string in key,vale each line
-fn to_format_string(dict: &HashMap<String,String>) ->  Box<String> {
-    let mut contents: String = "".to_owned();
-    for (key, val) in dict.iter() {
-        let mut line: String =  key.clone().to_owned();
-        line.push(',');
-        line.push_str(val);
-        line.push('\n');
-        contents.push_str(&line);
-        
-    }
-    return Box::new(contents)
 }
