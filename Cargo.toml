@@ -3,7 +3,7 @@ name = "zhengma"
 version = "0.1.0"
 authors = ["xiaoyu <xiaoyu@guanghe.tv>"]
 edition = "2018"
-
+default-run="zhengma"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
