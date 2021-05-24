@@ -1,5 +1,4 @@
 extern crate clap;
-use std::str::Lines;
 use std::fs;
 use std::collections::HashMap;
 use clap::{Arg, App, SubCommand};
@@ -29,7 +28,7 @@ fn main() {
         .get_matches();
 
     if let Some(world) = matches.value_of("WORLD") {
-        match search_code("./data/zhengma.hash", world) {
+        match search_code("/etc/zhengma/data/zhengma.hash", world) {
             Some(codes) =>{
                 println!("{}:{}", world, codes)
             }
@@ -45,7 +44,7 @@ fn main() {
         let contents = fs::read_to_string(file)
             .expect("Something went wrong reading the file");
             
-        let coded = translate_with_cache("./data/zhengma.hash", &contents);
+        let coded = translate_with_cache("/etc/zhengma/data/zhengma.hash", &contents);
         match matches.value_of("OUTPUT") {
             Some(path) => fs::write(path, coded.as_bytes()).expect("write file error"),
             None => println!("{}",coded),
