@@ -26,9 +26,10 @@ fn main() {
                     )                    
         )
         .get_matches();
-
+    let hash_file_path = get_hash_file_path();
+    
     if let Some(world) = matches.value_of("WORLD") {
-        match search_code("/etc/zhengma/data/zhengma.hash", world) {
+        match search_code(&hash_file_path, world) {
             Some(codes) =>{
                 println!("{}:{}", world, codes)
             }
@@ -43,13 +44,24 @@ fn main() {
         let file = matches.value_of("INPUT").expect("expect input file");
         let contents = fs::read_to_string(file)
             .expect("Something went wrong reading the file");
-            
-        let coded = translate_with_cache("/etc/zhengma/data/zhengma.hash", &contents);
+        
+        let coded = translate_with_cache(&hash_file_path, &contents);
         match matches.value_of("OUTPUT") {
             Some(path) => fs::write(path, coded.as_bytes()).expect("write file error"),
             None => println!("{}",coded),
         };
     } 
+}
+
+
+#[cfg(debug_assertions)]
+fn get_hash_file_path() -> String {
+    "./data/zhengma.hash".to_string()
+}
+
+#[cfg(not(debug_assertions))]
+fn get_hash_file_path() {
+    "/etc/zhengma/data/zhengma.hash".to_string()
 }
 
 fn count_hash_index(key: &str) -> usize{

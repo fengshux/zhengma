@@ -8,38 +8,6 @@ fn main() {
     
     data_to_hash_file();
 }
-// init data from ./data/zhengma.dict.yaml into ./data/zhengma.data
-pub fn zhengma_dict_to_data() {
-
-    let contents = fs::read_to_string("./data/zhengma.dict.yaml")
-        .expect("Something went wrong reading the file");
-    
-    let v: Vec<&str> = contents.split("...").collect();
-    let zhengma_str = v[1];
-    let mut zhengma_content: String = "".to_owned();
-    
-    for line in zhengma_str.lines() {
-        let dict: Vec<&str> = line.split("\t").collect();
-        if dict.len() > 1 {
-            zhengma_content.push_str(&format!("{},{},{}\n", dict[0], dict[1], dict[2]));
-        }
-    }
-
-    match fs::write("./data/zhengma.data", zhengma_content.as_bytes()) {
-        Ok(_) => println!("write, success"),
-        Err(e) => println!("write to file error,{}", e),
-    }
-}
-
-// 把map 序列化成字符串每个行都是 key,value的格式
-pub fn to_format_string(dict: &HashMap<String,String>) ->  Box<String> {
-    let mut contents: String = "".to_owned();
-    for (key, val) in dict.iter() {
-        contents.push_str(&format!("{},{}\n", key,val));        
-    }
-    return Box::new(contents)
-}
-
 
 // 把data里的数据装载到map里
 pub fn load_data_to_map_full_code(path: &str) -> Box<HashMap<String,Vec<String>>> {
@@ -83,7 +51,7 @@ pub fn data_to_hash_file() {
         let sum = key.chars().map(|c| {
             let mut b = [0; 8];
             c.encode_utf8(&mut b);
-            println!("int:{}",u64::from_be_bytes(b));
+            println!("int:{}",u64::from_le_bytes(b));
             return u64::from_le_bytes(b)
         } ).sum::<u64>();
         let index = (sum % 100000) as usize;
