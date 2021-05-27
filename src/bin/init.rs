@@ -61,7 +61,7 @@ pub fn data_to_hash_file() {
         }        
     }
 
-    let mut out_writer: BufWriter<Box<dyn Write>> = BufWriter::new(Box::new(File::create("./data/zhengma.hash").unwrap()));
+    let mut out_writer = BufWriter::new(Box::new(File::create("./data/zhengma.hash").unwrap()));
     for mut item in hash_array {
         println!("{:?}", item);
         item.sort_by_key(| cell | cell.key.chars().count() );

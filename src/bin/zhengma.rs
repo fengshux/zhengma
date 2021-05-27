@@ -60,7 +60,7 @@ fn get_hash_file_path() -> String {
 }
 
 #[cfg(not(debug_assertions))]
-fn get_hash_file_path() {
+fn get_hash_file_path() -> String {
     "/etc/zhengma/data/zhengma.hash".to_string()
 }
 
