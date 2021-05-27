@@ -22,8 +22,22 @@ fn main() {
                 target_directory = format!("{}/.cargo/", env::var("HOME").unwrap());
             }
         }
-        Command::new("cp").args(&["data/zhengma.hash", &format!("{}/zhengma.hash", target_directory)])
+        let target = Path::new(&target_directory).join("zhengma.hash");
+        Command::new("cp").args(&["data/zhengma.hash", target.to_str().unwrap()])
             .status().unwrap();
+
+
+        let out_dir = env::var_os("OUT_DIR").unwrap();
+        let dest_path = Path::new(&out_dir).join("file.rs");
+        
+        fs::write(
+            &dest_path,
+            format!("fn get_hash_file_path() -> String {{
+                    \"{}\".to_string()
+            }}
+           ", target.to_str().unwrap())
+        ).unwrap();
+        println!("cargo:rerun-if-changed=build.rs");
     }
 
 }

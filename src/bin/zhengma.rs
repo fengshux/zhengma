@@ -60,9 +60,10 @@ fn get_hash_file_path() -> String {
 }
 
 #[cfg(not(debug_assertions))]
-fn get_hash_file_path() -> String {
-    "/etc/zhengma/data/zhengma.hash".to_string()
-}
+include!(concat!(env!("OUT_DIR"), "/file.rs"));
+// fn get_hash_file_path() -> String {
+//     "/etc/zhengma/data/zhengma.hash".to_string()
+// }
 
 fn count_hash_index(key: &str) -> usize{
     let sum = key.chars().map(|c| {
